@@ -18,7 +18,12 @@ async function setupEditor(note_id: number) {
   }
   let note_body = selected_note["body"]
   document.querySelector<HTMLTextAreaElement>("#note_body")!.value = note_body
-  document.querySelector<HTMLTextAreaElement>("#note_title")!.value = response[0]["name"]
+  document.querySelector<HTMLTextAreaElement>("#note_title")!.value = selected_note["name"]
+
+  const params = new URL(window.location.href).searchParams;
+  params.set("note", selected_note.entity);
+  document.title = `EqueNote - ${selected_note["name"]} (id: ${selected_note["entity"]})`
+  window.history.pushState({}, "", "?" + params.toString());
 }
 
 async function createNewNote() {
@@ -68,7 +73,16 @@ async function getNotes() {
   for (let note of answer) {
     let elt = document.createElement('a');
     parent.appendChild(elt)
-    elt.href = `/?note=${note.entity}`
+    elt.onclick = () => setupEditor(note.entity);
     elt.innerHTML = note.name;
   }
 }
+
+async function forceUpdate() {
+  await setupEditor(getCurrentNote());
+  window.history.pushState
+}
+
+// TODO: This doesn't currently work with the forward button at all,
+// maybe should look into bfcache?
+window.addEventListener("popstate", forceUpdate);
