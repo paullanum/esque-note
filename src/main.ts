@@ -54,6 +54,7 @@ async function save() {
 
   await name.update(current_note, { name: title_elt.value });
   await body.update(current_note, { body: body_elt.value });
+  getNotes();
 }
 
 async function setupUi() {
