@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ecsql-note</title>
+</head>
+
+<body>
+  <div id="navbar">
+    <nav>
+      <h1>ECSQL Note</h1>
+    </nav>
+  </div>
+  <div id="content">
+    <div id="sidebar">
+      <h2>Notes</h2>
+      <div>
+        <button id="new_note_button">New Note</button>
+        <button id="refresh">🔄️</button>
+      </div>
+      <div id="notes"></div>
+      <div id="filler"></div>
+      <div id="debug_console">
+        <textarea id="sql_debug"></textarea>
+        <button id="run_debug">Run</button>
+      </div>
+    </div>
+    <div id="editor">
+      <input type="text" id="note_title">
+      <textarea id="note_body"></textarea>
+      <button id="save_button">Save</button>
+    </div>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>
