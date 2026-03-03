@@ -1,8 +1,5 @@
-
-import { SQLocal } from "sqlocal";
-
 type Reference = `REFERENCE ${string}(${string})`
-type Data = "INTEGER" | "REAL" | "TEXT" | Reference;
+export type Data = "INTEGER" | "REAL" | "TEXT" | Reference;
 type TypeMap = {
     INTEGER: number,
     REAL: number,
@@ -10,8 +7,13 @@ type TypeMap = {
     [key: Reference]: number
 };
 
+async function init_ecsql() {
+    const { SQLocal } = await import("sqlocal");
+    return new SQLocal("database.sqlite3");
+}
 
-export let { sql, getDatabaseFile } = new SQLocal("database.sqlite3")
+// TODO: This is a weird pattern, there's a better way to handle this
+export let { sql, getDatabaseFile } = await init_ecsql()
 export let table_exists = (await sql`SELECT name FROM sqlite_master WHERE type = 'table' AND name='__entities'`).length > 0
 if (!table_exists) {
     console.log("Creating table...")
@@ -26,7 +28,24 @@ export async function createEntity() {
     return entity_count - 1;
 }
 
-export async function createComponent<T extends { [type_name: string]: Data }>(component_name: string, data_types: T) {
+export type ComponentDataTypes = {
+    [type_name: string]: Data
+}
+
+export type ComponentData<T extends ComponentDataTypes> = {
+    [data_name in keyof T]: TypeMap[T[data_name]]
+}
+
+type DefaultSqLocalReturnType = Record<string, any>[];
+
+export type Component<T extends ComponentDataTypes> = {
+    init: (entity: number, data: Partial<ComponentData<T>>) => Promise<DefaultSqLocalReturnType>
+    update: (entity: number, data: Partial<ComponentData<T>>) => Promise<DefaultSqLocalReturnType>
+    component: string,
+    data_types: T
+}
+
+export async function createComponent<T extends ComponentDataTypes>(component_name: string, data_types: T): Promise<Component<T>> {
     let data_input = ""
     let foreign_keys = ""
     let references: { [key: string]: string } = {}
@@ -53,7 +72,7 @@ export async function createComponent<T extends { [type_name: string]: Data }>(c
     await sql(input)
 
     return {
-        init: async (entity: number, data: Partial<{ [data_name in keyof T]: TypeMap[T[data_name]] }>) => {
+        init: async (entity: number, data: Partial<ComponentData<T>>) => {
             let keys = ""
             let values = ""
             for (let key of Object.keys(data)) {
@@ -68,7 +87,7 @@ export async function createComponent<T extends { [type_name: string]: Data }>(c
             console.log("SET:", input)
             return await sql(input)
         },
-        update: async (entity: number, data: Partial<{ [data_name in keyof T]: TypeMap[T[data_name]] }>) => {
+        update: async (entity: number, data: Partial<ComponentData<T>>) => {
             let updates = ""
             for (let key of Object.keys(data)) {
                 if (updates !== "") {
@@ -84,11 +103,13 @@ export async function createComponent<T extends { [type_name: string]: Data }>(c
             console.log("UPDATE:", input)
             return await sql(input)
         },
-        component: component_name
+        component: component_name,
+        data_types
     }
-    // TODO: Get data for given note
+    // TODO: Get data for given entity
 }
 
+// TODO: Take the component objects instead of strings?
 export async function query(...components: string[]) {
     let base = components[0]
     let joins = ""
@@ -100,4 +121,17 @@ export async function query(...components: string[]) {
     }
     let statement = `SELECT * FROM ${components[0]} ${joins}`
     return await sql(statement)
+}
+
+export async function listComponents() {
+    let components: { name: string }[] = await sql`SELECT name FROM sqlite_master WHERE type = 'table'`
+    let tags_box = document.querySelector<HTMLDivElement>("#tags")!;
+    for (let component of components) {
+        if (component.name.startsWith("__") || component.name === "sqlite_sequence") {
+            continue;
+        }
+        let elt = document.createElement('a');
+        elt.textContent = component.name
+        tags_box.appendChild(elt);
+    }
 }

@@ -18,6 +18,7 @@
     }
   },
   "dependencies": {
+    "@typescript/lib-dom": "npm:@types/web@^0.0.339",
     "sqlocal": "^0.17.0"
   }
 }
