@@ -9,11 +9,14 @@ type TypeMap = {
 
 async function init_ecsql() {
     const { SQLocal } = await import("sqlocal");
-    return new SQLocal("database.sqlite3");
+    return new SQLocal({
+        databasePath: "database.sqlite3",
+        onInit: (sql) => { return [sql`PRAGMA foreign_keys = true`] },
+    });
 }
 
 // TODO: This is a weird pattern, there's a better way to handle this
-export let { sql, getDatabaseFile } = await init_ecsql()
+export let { sql, deleteDatabaseFile } = await init_ecsql()
 export let table_exists = (await sql`SELECT name FROM sqlite_master WHERE type = 'table' AND name='__entities'`).length > 0
 if (!table_exists) {
     console.log("Creating table...")
@@ -61,12 +64,12 @@ export async function createComponent<T extends ComponentDataTypes>(component_na
         foreign_keys = ","
     }
     for (let ref of Object.keys(references)) {
-        foreign_keys += `FOREIGN KEY(${ref} REFERENCES ${references[ref]})`
+        foreign_keys += `FOREIGN KEY(${ref} REFERENCES ${references[ref]}) ON DELETE CASCADE`
     }
     let input = `CREATE TABLE IF NOT EXISTS ${component_name} (
     entity INTEGER UNIQUE PRIMARY KEY,
     ${data_input}
-    FOREIGN KEY(entity) REFERENCES __entities(id)
+    FOREIGN KEY(entity) REFERENCES __entities(id) ON DELETE CASCADE
     ${foreign_keys}
     )`
     await sql(input)
@@ -127,4 +130,12 @@ export async function listComponents() {
     let components: { name: string }[] = await sql`SELECT name FROM sqlite_master WHERE type = 'table'`
     return components.filter(component => !component.name.startsWith("__") && component.name !== "sqlite_sequence");
 
+}
+
+export async function removeComponent(componentName: string) {
+    return await sql`DROP TABLE ${componentName}`
+}
+
+export async function removeEntity(entityId: number) {
+    await sql`DELETE FROM __entities WHERE id = ${entityId}`
 }
