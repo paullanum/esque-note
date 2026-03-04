@@ -43,28 +43,31 @@
   </div>
   <dialog id="new_tag_dialog">
     <h1>New Tag</h1>
+    <h2>Data Types</h2>
+    <input type="text" id="new_tag_name">
     <div id="new_tag_data_types"></div>
-    Data Types
-    <button>+</button>
-    <button id="new_tag_accept" commandfor="new_tag_dialog" command="close">OK</button>
+    <button id="add_tag_data_type">+</button>
+    <button id="new_tag_accept">OK</button>
   </dialog>
   <dialog id="confirm_deletion">
     <h1>Are you sure you want to delete this note?</h1>
     <button id="confirm_deletion_button" commandfor="confirm_deletion" command="close">Delete</button>
   </dialog>
   <template id="new_tag_data_type_selection">
-    <label>
-      Name
-      <input type="text" class="new_tag_type_name">
-    </label>
-    <label>
-      Type
-      <select class="new_tag_type_data">
-        <option>String</option>
-        <option>Int</option>
-        <option>Float</option>
-      </select>
-    </label>
+    <form class="new_tag_data_type_entry">
+      <label>
+        Name
+        <input type="text" class="new_tag_type_name">
+      </label>
+      <label>
+        Type
+        <select class="new_tag_type_data">
+          <option>String</option>
+          <option>Int</option>
+          <option>Float</option>
+        </select>
+      </label>
+    </form>
   </template>
   <script type="module" src="/src/main.ts"></script>
 </body>

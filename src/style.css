@@ -79,6 +79,8 @@ h1 {
 
 #tags {
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 #notes {
@@ -141,11 +143,19 @@ button {
     border: 0;
     background: none;
   }
-
 }
 
 .note_link:hover {
   background-color: #343434;
+}
+
+.new_tag_data_type_entry {
+  flex-direction: row;
+}
+
+#new_tag_data_types {
+  display: flex;
+  flex-direction: column;
 }
 
 @media (prefers-color-scheme: light) {

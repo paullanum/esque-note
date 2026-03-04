@@ -125,13 +125,6 @@ export async function query(...components: string[]) {
 
 export async function listComponents() {
     let components: { name: string }[] = await sql`SELECT name FROM sqlite_master WHERE type = 'table'`
-    let tags_box = document.querySelector<HTMLDivElement>("#tags")!;
-    for (let component of components) {
-        if (component.name.startsWith("__") || component.name === "sqlite_sequence") {
-            continue;
-        }
-        let elt = document.createElement('a');
-        elt.textContent = component.name
-        tags_box.appendChild(elt);
-    }
+    return components.filter(component => !component.name.startsWith("__") && component.name !== "sqlite_sequence");
+
 }
