@@ -126,6 +126,28 @@ export async function query(...components: string[]) {
     return await sql(statement)
 }
 
+export async function queryEntity(component: string, entityId: number) {
+    let input = `SELECT * FROM "${component}" WHERE entity = ${entityId}`
+    let result = await sql(input);
+    if (result.length !== 1) {
+        if (result.length !== 0) {
+            console.error(`ERROR: MULTIPLE ROWS FOUND IN ${component} WITH ID ${entityId}`)
+        }
+        return null
+    }
+    return result[0];
+}
+
+export async function getDataTypes(component: string) {
+    let types: Record<string, Data> = {};
+    let input = `pragma table_info(${component})`;
+    let table_info = await sql(input);
+    for (let column of table_info) {
+        types[column["name"]] = column["type"];
+    }
+    return types
+}
+
 export async function listComponents() {
     let components: { name: string }[] = await sql`SELECT name FROM sqlite_master WHERE type = 'table'`
     return components.filter(component => !component.name.startsWith("__") && component.name !== "sqlite_sequence");

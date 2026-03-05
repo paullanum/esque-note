@@ -11,6 +11,13 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --dark-text: #213547;
+
+  --string-tag-color: #c00000;
+  --int-tag-color: #ffdd00;
+  --float-tag-color: #098a5d;
+  --reference-tag-color: #0077d9;
 }
 
 a {
@@ -134,6 +141,52 @@ button {
   backdrop-filter: blur(1px);
 }
 
+#note_tags_list,
+#note_tags {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.tag {
+  border-radius: 3rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin: 0.5rem;
+}
+
+.int {
+  background-color: var(--int-tag-color);
+  color: var(--dark-text);
+}
+
+.float {
+  background-color: var(--float-tag-color);
+}
+
+.string {
+  background-color: var(--string-tag-color);
+}
+
+.reference {
+  background-color: var(--reference-tag-color);
+}
+
+.tag-name {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 0.5rem 0.5rem 0.5rem 0.9rem;
+  border-top-left-radius: 3rem;
+  border-bottom-left-radius: 3rem;
+}
+
+.tag-value {
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 0.5rem 0.9rem 0.5rem 0.5rem;
+  border-top-right-radius: 3rem;
+  border-bottom-right-radius: 3rem;
+}
+
 .note_link {
   width: 100%;
   display: flex;
@@ -160,7 +213,7 @@ button {
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
+    color: var(--dark-text);
     background-color: #ffffff;
   }
 

@@ -9,10 +9,10 @@
 </head>
 
 <body>
-  <nav id="navbar">
+  <header id="navbar">
     <h1>Esque Note</h1>
-  </nav>
-  <div id="content">
+  </header>
+  <main id="content">
     <div id="sidebar">
       <h2>Notes</h2>
       <div>
@@ -33,14 +33,15 @@
     </div>
     <div id="editor">
       <input type="text" id="note_title">
-      <div id="note_tags">
+      <div id="note_tags_list">
         Tags:
         <button id="new_note_tag">+</button>
+        <div id="note_tags"></div>
       </div>
       <textarea id="note_body"></textarea>
       <button id="save_button">Save</button>
     </div>
-  </div>
+  </main>
   <dialog id="new_tag_dialog">
     <h1>New Tag</h1>
     <h2>Data Types</h2>
@@ -68,6 +69,14 @@
         </select>
       </label>
     </form>
+  </template>
+  <template id="tag_template">
+    <div class="tag">
+      <div id="tag_name" class="tag-name">
+      </div>
+      <div id="tag_value" class="tag-value">
+      </div>
+    </div>
   </template>
   <script type="module" src="/src/main.ts"></script>
 </body>

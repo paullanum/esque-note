@@ -16,7 +16,6 @@ await reloadNotes()
 await getTags()
 
 
-
 export function getCurrentNote() {
   let url = new URL(window.location.href);
   let params = url.searchParams;
