@@ -5,13 +5,14 @@
 
   color-scheme: light dark;
   color: var(--light-text);
-  background-color: #242424;
+  background-color: var(--default-background);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
+  --default-background: #242424;
   --hover-background: #343434;
 
   --dark-text: #213547;
@@ -48,6 +49,48 @@ h1 {
 
 button {
   padding: 0.5rem;
+}
+
+details {
+  margin: 1rem;
+
+  summary {
+    &::after {
+      content: "▾";
+    }
+
+    [open] &::after {
+      content: "▴";
+    }
+
+    list-style: none;
+
+    &:hover {
+      background-color: var(--hover-background);
+    }
+  }
+
+  ul {
+    position: absolute;
+    margin-top: 0;
+    margin-left: 0;
+    list-style: none;
+    padding-left: 0;
+    outline: 0.1rem solid var(--hover-background);
+
+    background-color: var(--default-background);
+
+    li {
+      position: relative;
+      min-width: full;
+
+      &:hover {
+        background-color: var(--hover-background);
+      }
+    }
+
+    overflow-y: scroll;
+  }
 }
 
 #navbar {
@@ -166,10 +209,6 @@ button {
     margin: 0.5rem;
     font-size: medium;
 
-    &:first-child {
-      margin-left: 0;
-    }
-
     &:last-child {
       margin-right: 0;
     }
@@ -231,7 +270,7 @@ button {
 @media (prefers-color-scheme: light) {
   :root {
     color: var(--dark-text);
-    background-color: #ffffff;
+    --default-background: #ffffff;
     --hover-background: #c6c6c6;
     --string-tag-color: #be3737;
     --int-tag-color: #ffe53e;

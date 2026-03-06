@@ -4,6 +4,8 @@ import { NOTE_SELECTED_EVENT } from "./editor";
 let dialog = document.querySelector<HTMLDialogElement>("#new_tag_dialog")!;
 let dataTypeContainer = dialog.querySelector<HTMLDivElement>("#new_tag_data_types")!;
 let dataTypeTemplate = document.querySelector<HTMLTemplateElement>("#new_tag_data_type_selection")!;
+let unusedTags = document.querySelector<HTMLUListElement>("#unused_tags")!;
+let newNoteTag = document.querySelector<HTMLDetailsElement>("#new_note_tag")!;
 
 document.querySelector<HTMLButtonElement>("#new_tag_button")!.onclick = initTagDialog;
 document.querySelector<HTMLButtonElement>("#new_tag_accept")!.onclick = submitNewTag;
@@ -83,7 +85,7 @@ async function setupEditorTags(event: CustomEvent<{ noteId: number }>) {
     let tagSpace = document.querySelector<HTMLDivElement>("#note_tags")!;
     tagSpace.textContent = "";
 
-    let tags = await getTagsForNote(noteId);
+    let { components: tags, unused_components: unused_tags } = await getTagsForNote(noteId);
     let tagElts: ReturnType<typeof createTagVisual>[] = [];
     for (let tagName of Object.keys(tags)) {
         let data = await queryEntity(tagName, noteId);
@@ -102,19 +104,31 @@ async function setupEditorTags(event: CustomEvent<{ noteId: number }>) {
     for (let elt of tagElts) {
         tagSpace.appendChild(elt);
     }
+    unusedTags.textContent = "";
+    for (let tag of Object.keys(unused_tags)) {
+        let item = document.createElement("li");
+        item.textContent = tag;
+        item.onclick = () => {
+            newNoteTag.open = false
+            console.log(`Add ${tag} to note with id ${noteId}`)
+        };
+        unusedTags.appendChild(item);
+    }
 }
 
 async function getTagsForNote(noteId: number) {
     let components: Record<string, Record<string, Data>> = {};
+    let unused_components: Record<string, Record<string, Data>> = {};
     for (let component of await listComponents()) {
         let result = await queryEntity(component.name, noteId)
         if (result === null) {
+            unused_components[component.name] = await getDataTypes(component.name);
             continue;
         }
         components[component.name] = await getDataTypes(component.name);
     }
     console.log(components);
-    return components;
+    return { components, unused_components };
 }
 
 const sqliteToCssClass: Record<string, string> = {
@@ -123,7 +137,7 @@ const sqliteToCssClass: Record<string, string> = {
     "TEXT": "string",
 }
 
-export function createTagVisual(name: string, data: Record<string, { type: Data, data: number | string }>) {
+function createTagVisual(name: string, data: Record<string, { type: Data, data: number | string }>) {
     let { entity, ...filteredTypes } = data;
     if (Object.keys(filteredTypes).length > 1) {
         // TODO: Compound data types
@@ -142,6 +156,7 @@ export function createTagVisual(name: string, data: Record<string, { type: Data,
 // TODO: This
 async function deleteTag(tagName: string) {
     await removeComponent(tagName);
+    document.dispatchEvent(new CustomEvent(TAGS_CHANGED_EVENT));
 }
 
 document.addEventListener(NOTE_SELECTED_EVENT, async (e) => await setupEditorTags(e as CustomEvent<{ noteId: number }>));

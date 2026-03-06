@@ -22,9 +22,7 @@
       <div id="notes"></div>
       <div>
         <h2>Tags</h2>
-        <div>
-          <button id="new_tag_button" commandfor="new_tag_dialog" command="show-modal">New Tag</button>
-        </div>
+        <button id="new_tag_button" commandfor="new_tag_dialog" command="show-modal">New Tag</button>
         <div id="tags"></div>
       </div>
       <div>
@@ -39,8 +37,11 @@
       <input type="text" id="note_title">
       <div id="note_tags_list">
         Tags:
-        <button id="new_note_tag">+</button>
         <div id="note_tags"></div>
+        <details id="new_note_tag">
+          <summary>Add...</summary>
+          <ul id="unused_tags"></ul>
+        </details>
       </div>
       <textarea id="note_body"></textarea>
       <button id="save_button">Save</button>
