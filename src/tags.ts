@@ -1,16 +1,25 @@
-import { createComponent, getDataTypes, listComponents, queryEntity, removeComponent, type Data } from "./ecsql";
+import { createComponent, getComponent, getDataTypes, listComponents, queryEntity, removeComponent, type Data } from "./ecsql";
 import { NOTE_SELECTED_EVENT } from "./editor";
+import { getCurrentNote } from "./main";
 
 let dialog = document.querySelector<HTMLDialogElement>("#new_tag_dialog")!;
 let dataTypeContainer = dialog.querySelector<HTMLDivElement>("#new_tag_data_types")!;
 let dataTypeTemplate = document.querySelector<HTMLTemplateElement>("#new_tag_data_type_selection")!;
 let unusedTags = document.querySelector<HTMLUListElement>("#unused_tags")!;
 let newNoteTag = document.querySelector<HTMLDetailsElement>("#new_note_tag")!;
+let addTagToNoteDialog = document.querySelector<HTMLDialogElement>("#add_tag_value_dialog")!;
+let addTagName = document.querySelector<HTMLDivElement>("#add_tag_name")!;
+let addTagValue = document.querySelector<HTMLInputElement>("#add_tag_value")!;
+let submitTagValue = document.querySelector<HTMLButtonElement>("#submit_tag_value")!;
 
 document.querySelector<HTMLButtonElement>("#new_tag_button")!.onclick = initTagDialog;
 document.querySelector<HTMLButtonElement>("#new_tag_accept")!.onclick = submitNewTag;
+submitTagValue.onclick = addTagToNote;
 
 export const TAGS_CHANGED_EVENT = "tagschanged";
+
+let lastUsedNote: number = -1;
+let lastUsedTagData: { component: string, column: string };
 
 function initTagDialog() {
     dataTypeContainer.textContent = "";
@@ -40,7 +49,6 @@ function tagTypeToData(tagType: string): Data {
 
 async function reloadTags() {
     let components = await listComponents();
-    console.log(components);
     let tags_box = document.querySelector<HTMLDivElement>("#tags")!;
     for (let component of components) {
         let elt = document.createElement('a');
@@ -85,7 +93,7 @@ async function setupEditorTags(event: CustomEvent<{ noteId: number }>) {
     let tagSpace = document.querySelector<HTMLDivElement>("#note_tags")!;
     tagSpace.textContent = "";
 
-    let { components: tags, unused_components: unused_tags } = await getTagsForNote(noteId);
+    let { components: tags, unused_components: unusedNoteTags } = await getTagsForNote(noteId);
     let tagElts: ReturnType<typeof createTagVisual>[] = [];
     for (let tagName of Object.keys(tags)) {
         let data = await queryEntity(tagName, noteId);
@@ -105,15 +113,31 @@ async function setupEditorTags(event: CustomEvent<{ noteId: number }>) {
         tagSpace.appendChild(elt);
     }
     unusedTags.textContent = "";
-    for (let tag of Object.keys(unused_tags)) {
+    for (let tag of Object.keys(unusedNoteTags)) {
         let item = document.createElement("li");
         item.textContent = tag;
         item.onclick = () => {
             newNoteTag.open = false
-            console.log(`Add ${tag} to note with id ${noteId}`)
+            addTagName.textContent = `Value for ${tag}`
+            addTagToNoteDialog.show();
+            lastUsedNote = getCurrentNote();
+            let nonEntityKey = Object.keys(unusedNoteTags[tag]).filter(x => x !== "entity")[0];
+            lastUsedTagData = { column: nonEntityKey, component: tag }
         };
         unusedTags.appendChild(item);
     }
+}
+
+async function addTagToNote() {
+    if (lastUsedNote === -1) {
+        throw "ERROR: TRIED TO ADD TAG WITHOUT PROVIDING NOTE"
+    }
+    let { init } = getComponent(lastUsedTagData.component);
+    let data: Record<string, Data> = {};
+    data[lastUsedTagData.column] = addTagValue.value as Data;
+    await init(lastUsedNote, data);
+    document.dispatchEvent(new CustomEvent(NOTE_SELECTED_EVENT, { detail: { noteId: lastUsedNote } }))
+    lastUsedNote = -1;
 }
 
 async function getTagsForNote(noteId: number) {
@@ -127,7 +151,6 @@ async function getTagsForNote(noteId: number) {
         }
         components[component.name] = await getDataTypes(component.name);
     }
-    console.log(components);
     return { components, unused_components };
 }
 

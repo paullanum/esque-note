@@ -29,12 +29,12 @@
         <h2>Views</h2>
       </div>
       <div id="debug_console">
-        <textarea id="sql_debug"></textarea>
+        <textarea id="sql_debug" aria-label="SQL Debug Panel"></textarea>
         <button id="run_debug">Run</button>
       </div>
     </div>
     <div id="editor">
-      <input type="text" id="note_title">
+      <input type="text" id="note_title" aria-label="Title">
       <div id="note_tags_list">
         Tags:
         <div id="note_tags"></div>
@@ -42,15 +42,23 @@
           <summary>Add...</summary>
           <ul id="unused_tags"></ul>
         </details>
+        <dialog id="add_tag_value_dialog">
+          <div id="add_tag_name">Value for NAME</div>
+          <input type="text" id="add_tag_value">
+          <button id="submit_tag_value" commandfor="add_tag_value_dialog" command="close">OK</button>
+        </dialog>
       </div>
-      <textarea id="note_body"></textarea>
+      <textarea id="note_body" aria-label="Note Body"></textarea>
       <button id="save_button">Save</button>
     </div>
   </main>
   <dialog id="new_tag_dialog">
     <h1>New Tag</h1>
+    <label>
+      Tag Name:
+      <input type="text" id="new_tag_name">
+    </label>
     <h2>Data Types</h2>
-    <input type="text" id="new_tag_name">
     <div id="new_tag_data_types"></div>
     <button id="add_tag_data_type">+</button>
     <button id="new_tag_accept">OK</button>

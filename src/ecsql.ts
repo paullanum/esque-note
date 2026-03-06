@@ -122,6 +122,44 @@ export async function createComponent<T extends ComponentDataTypes>(component_na
     }
 }
 
+// TODO: Reuse this in the `createComponent` function
+export function getComponent<T extends ComponentDataTypes = Record<string, Data>>(componentName: string) {
+    return {
+        init: async (entity: number, data: Partial<ComponentData<T>>) => {
+            let keys = ""
+            let values = ""
+            for (let key of Object.keys(data)) {
+                keys += "," + key
+                let input: number | string = data[key]!;
+                if (typeof data[key] === "string") {
+                    input = "'" + input + "'"
+                }
+                values += "," + input
+            }
+            let input = `INSERT INTO ${componentName} (entity ${keys}) VALUES (${entity} ${values})`
+            console.log("SET:", input)
+            return await sql(input)
+        },
+        update: async (entity: number, data: Partial<ComponentData<T>>) => {
+            let updates = ""
+            for (let key of Object.keys(data)) {
+                if (updates !== "") {
+                    updates += "," + key
+                }
+                let input: number | string = data[key]!;
+                if (typeof data[key] === "string") {
+                    input = "'" + input + "'"
+                }
+                updates += `${key} = ${input}`;
+            }
+            let input = `UPDATE ${componentName} SET ${updates} WHERE entity = ${entity}`
+            console.log("UPDATE:", input)
+            return await sql(input)
+        },
+        component: componentName,
+    }
+}
+
 // TODO: Take the component objects instead of strings?
 export async function query(...components: string[]) {
     let base = components[0]

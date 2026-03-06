@@ -56,6 +56,7 @@ async function reloadNotes() {
     parent.innerText = "";
     for (let note of answer) {
         let elt = document.createElement('a');
+        elt.tabIndex = 0;
         parent.appendChild(elt)
         elt.onclick = () => document.dispatchEvent(new CustomEvent(NOTE_SELECTED_EVENT, { detail: { noteId: note.entity } }))
         elt.innerHTML = note.name;
