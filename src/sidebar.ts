@@ -1,9 +1,11 @@
 import { createEntity, deleteDatabaseFile, query, removeEntity, sql } from "./ecsql";
-import { setupEditor } from "./editor";
+import { NOTE_SELECTED_EVENT } from "./editor";
 import { name, body } from "./main";
 
 let selectedToDelete: number = -1;
+export const NOTES_CHANGED_EVENT = "noteschanged";
 
+const modal = document.querySelector<HTMLDialogElement>("#confirm_deletion")!;
 async function deleteNote() {
     if (selectedToDelete === -1) {
         return
@@ -11,21 +13,22 @@ async function deleteNote() {
     console.log("Attempting to delete ", selectedToDelete);
     await removeEntity(selectedToDelete)
     selectedToDelete = -1
-    await reloadNotes()
+    document.dispatchEvent(new CustomEvent(NOTES_CHANGED_EVENT));
 }
 
-export function setupSidebar() {
+function setupSidebar() {
     document.querySelector<HTMLButtonElement>("#run_debug")!.onclick = runDebugQuery;
     document.querySelector<HTMLButtonElement>("#new_note_button")!.onclick = createNewNote;
-    document.querySelector<HTMLButtonElement>("#refresh")!.onclick = reloadNotes;
+    document.querySelector<HTMLButtonElement>("#refresh")!.onclick = () => document.dispatchEvent(new CustomEvent(NOTES_CHANGED_EVENT));
     document.querySelector<HTMLButtonElement>("#confirm_deletion_button")!.onclick = deleteNote;
 }
+
 
 async function createNewNote() {
     let entity = await createEntity();
     name.init(entity, { name: "New Note" });
     body.init(entity, { body: "" });
-    await reloadNotes();
+    document.dispatchEvent(new CustomEvent(NOTES_CHANGED_EVENT));
 }
 
 async function runDebugQuery() {
@@ -45,16 +48,16 @@ function prepareDeletion(noteId: number) {
     selectedToDelete = noteId;
 }
 
-export async function reloadNotes() {
-    ///@ts-ignore
-    let answer: { entity: number, name: string, body: string }[] = await query(name.component, body.component);
+document.addEventListener(NOTES_CHANGED_EVENT, reloadNotes)
+
+async function reloadNotes() {
+    let answer = await query(name.component, body.component) as { entity: number, name: string, body: string }[];
     let parent = document.querySelector<HTMLDivElement>("#notes")!;
     parent.innerText = "";
-    let modal = document.querySelector<HTMLDialogElement>("#confirm_deletion")!;
     for (let note of answer) {
         let elt = document.createElement('a');
         parent.appendChild(elt)
-        elt.onclick = () => setupEditor(note.entity);
+        elt.onclick = () => document.dispatchEvent(new CustomEvent(NOTE_SELECTED_EVENT, { detail: { noteId: note.entity } }))
         elt.innerHTML = note.name;
         elt.classList.add("note_link")
         let button = document.createElement('button')
@@ -66,3 +69,6 @@ export async function reloadNotes() {
         elt.appendChild(button);
     }
 }
+
+
+setupSidebar();

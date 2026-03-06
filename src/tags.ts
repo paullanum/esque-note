@@ -1,8 +1,14 @@
-import { createComponent, getDataTypes, listComponents, queryEntity, type Data } from "./ecsql";
+import { createComponent, getDataTypes, listComponents, queryEntity, removeComponent, type Data } from "./ecsql";
+import { NOTE_SELECTED_EVENT } from "./editor";
 
 let dialog = document.querySelector<HTMLDialogElement>("#new_tag_dialog")!;
 let dataTypeContainer = dialog.querySelector<HTMLDivElement>("#new_tag_data_types")!;
 let dataTypeTemplate = document.querySelector<HTMLTemplateElement>("#new_tag_data_type_selection")!;
+
+document.querySelector<HTMLButtonElement>("#new_tag_button")!.onclick = initTagDialog;
+document.querySelector<HTMLButtonElement>("#new_tag_accept")!.onclick = submitNewTag;
+
+export const TAGS_CHANGED_EVENT = "tagschanged";
 
 function initTagDialog() {
     dataTypeContainer.textContent = "";
@@ -56,7 +62,7 @@ async function submitNewTag() {
     }
     await createComponent(tagNameInput.value, dataTypes);
     dialog.close();
-    await reloadTags();
+    document.dispatchEvent(new CustomEvent(TAGS_CHANGED_EVENT));
 }
 
 function validateNewTag() {
@@ -72,7 +78,33 @@ function validateNewTag() {
     return true;
 }
 
-export async function getTagsForNote(noteId: number) {
+async function setupEditorTags(event: CustomEvent<{ noteId: number }>) {
+    let noteId = event.detail.noteId;
+    let tagSpace = document.querySelector<HTMLDivElement>("#note_tags")!;
+    tagSpace.textContent = "";
+
+    let tags = await getTagsForNote(noteId);
+    let tagElts: ReturnType<typeof createTagVisual>[] = [];
+    for (let tagName of Object.keys(tags)) {
+        let data = await queryEntity(tagName, noteId);
+        // TODO: Cache this
+        let types = await getDataTypes(tagName);
+        if (data === null) {
+            throw "ERROR: queryEntity returned null";
+        }
+        let tagData: Record<string, { data: string | number; type: Data; }> = {};
+        for (let columnName of Object.keys(data)) {
+            tagData[columnName] = { data: data[columnName], type: types[columnName] };
+        }
+        let tag = createTagVisual(tagName, tagData);
+        tagElts.push(tag);
+    }
+    for (let elt of tagElts) {
+        tagSpace.appendChild(elt);
+    }
+}
+
+async function getTagsForNote(noteId: number) {
     let components: Record<string, Record<string, Data>> = {};
     for (let component of await listComponents()) {
         let result = await queryEntity(component.name, noteId)
@@ -102,19 +134,15 @@ export function createTagVisual(name: string, data: Record<string, { type: Data,
     let tagTemplate = document.querySelector<HTMLTemplateElement>("#tag_template")!;
     let elt = document.importNode(tagTemplate, true).content;
     elt.querySelector<HTMLDivElement>("#tag_name")!.textContent = name;
-    // let content = await queryEntity()
     elt.querySelector<HTMLDivElement>("#tag_value")!.textContent = filteredTypes[tempFirstKey].data as string;
     elt.firstElementChild!!.classList.add(sqliteToCssClass[filteredTypes[tempFirstKey].type]);
     return elt
 }
 
 // TODO: This
-function deleteTag() {
-
+async function deleteTag(tagName: string) {
+    await removeComponent(tagName);
 }
 
-export async function setupTags() {
-    document.querySelector<HTMLButtonElement>("#new_tag_button")!.onclick = initTagDialog;
-    document.querySelector<HTMLButtonElement>("#new_tag_accept")!.onclick = submitNewTag;
-    await reloadTags();
-}
+document.addEventListener(NOTE_SELECTED_EVENT, async (e) => await setupEditorTags(e as CustomEvent<{ noteId: number }>));
+document.addEventListener(TAGS_CHANGED_EVENT, reloadTags);

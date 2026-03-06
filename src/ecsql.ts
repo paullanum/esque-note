@@ -7,6 +7,8 @@ type TypeMap = {
     [key: Reference]: number
 };
 
+const DEBUG_MODE = false;
+
 async function init_ecsql() {
     const { SQLocal } = await import("sqlocal");
     return new SQLocal({
@@ -16,17 +18,25 @@ async function init_ecsql() {
 }
 
 // TODO: This is a weird pattern, there's a better way to handle this
-export let { sql, deleteDatabaseFile } = await init_ecsql()
-export let table_exists = (await sql`SELECT name FROM sqlite_master WHERE type = 'table' AND name='__entities'`).length > 0
-if (!table_exists) {
-    console.log("Creating table...")
-    await sql`CREATE TABLE IF NOT EXISTS __entities (id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT)`
+let { sql: _sql, deleteDatabaseFile: deleteDb } = await init_ecsql()
+export let deleteDatabaseFile = deleteDb;
+export let sql = (input: string) => {
+    if (DEBUG_MODE) {
+        console.log(`attempting: ${input}`)
+    }
+    return _sql(input);
 }
 
-let entity_count: number = (await sql`SELECT COUNT(*) as count FROM __entities`)[0]["count"]
+export let table_exists = (await _sql`SELECT name FROM sqlite_master WHERE type = 'table' AND name='__entities'`).length > 0
+if (!table_exists) {
+    console.log("Creating table...")
+    await _sql`CREATE TABLE IF NOT EXISTS __entities (id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT)`
+}
+
+let entity_count: number = (await _sql`SELECT COUNT(*) as count FROM __entities`)[0]["count"]
 
 export async function createEntity() {
-    await sql`INSERT INTO __entities(id) VALUES (${entity_count})`
+    await _sql`INSERT INTO __entities(id) VALUES (${entity_count})`
     entity_count += 1;
     return entity_count - 1;
 }
@@ -49,6 +59,7 @@ export type Component<T extends ComponentDataTypes> = {
 }
 
 export async function createComponent<T extends ComponentDataTypes>(component_name: string, data_types: T): Promise<Component<T>> {
+    // TODO: Skip this part if already created
     let data_input = ""
     let foreign_keys = ""
     let references: { [key: string]: string } = {}
@@ -109,7 +120,6 @@ export async function createComponent<T extends ComponentDataTypes>(component_na
         component: component_name,
         data_types
     }
-    // TODO: Get data for given entity
 }
 
 // TODO: Take the component objects instead of strings?
@@ -149,15 +159,15 @@ export async function getDataTypes(component: string) {
 }
 
 export async function listComponents() {
-    let components: { name: string }[] = await sql`SELECT name FROM sqlite_master WHERE type = 'table'`
+    let components: { name: string }[] = await _sql`SELECT name FROM sqlite_master WHERE type = 'table'`
     return components.filter(component => !component.name.startsWith("__") && component.name !== "sqlite_sequence");
 
 }
 
 export async function removeComponent(componentName: string) {
-    return await sql`DROP TABLE ${componentName}`
+    return await _sql`DROP TABLE ${componentName}`
 }
 
 export async function removeEntity(entityId: number) {
-    await sql`DELETE FROM __entities WHERE id = ${entityId}`
+    await _sql`DELETE FROM __entities WHERE id = ${entityId}`
 }
