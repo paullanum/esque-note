@@ -4,7 +4,7 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
+  color: var(--light-text);
   background-color: #242424;
 
   font-synthesis: none;
@@ -12,7 +12,10 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
+  --hover-background: #343434;
+
   --dark-text: #213547;
+  --light-text: rgba(255, 255, 255, 0.87);
 
   --string-tag-color: #c00000;
   --int-tag-color: #ffdd00;
@@ -43,9 +46,8 @@ h1 {
   line-height: 1.1;
 }
 
-#app {
-  height: fill;
-  margin: 0;
+button {
+  padding: 0.5rem;
 }
 
 #navbar {
@@ -77,24 +79,45 @@ h1 {
   border-right: 0.1rem solid #f9f9f9;
   display: flex;
   flex-direction: column;
-}
 
-#debug_console {
-  font-family: monospace;
-  align-self: flex-end;
-}
+  #debug_console {
+    font-family: monospace;
+    align-self: flex-end;
+  }
 
-#tags {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
+  #tags {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 
-#notes {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
+    :hover {
+      background-color: var(--hover-background);
+    }
+  }
+
+  #notes {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+
+    :hover {
+      background-color: var(--hover-background);
+    }
+
+    .note_link {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+
+      >button {
+        border: 0;
+        background: none;
+      }
+
+    }
+
+  }
 }
 
 #editor {
@@ -123,10 +146,65 @@ h1 {
     height: 100%;
   }
 
-}
+  #note_tags_list,
+  #note_tags {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    font-size: x-large;
+  }
 
-button {
-  padding: 0.5rem;
+  #new_note_tag {
+    margin: 1rem;
+  }
+
+  .tag {
+    border-radius: 3rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 0.5rem;
+    font-size: medium;
+
+    &:first-child {
+      margin-left: 0;
+    }
+
+    &:last-child {
+      margin-right: 0;
+    }
+
+    &.int {
+      background-color: var(--int-tag-color);
+      color: var(--dark-text);
+    }
+
+    &.float {
+      background-color: var(--float-tag-color);
+    }
+
+    &.string {
+      background-color: var(--string-tag-color);
+    }
+
+    &.reference {
+      background-color: var(--reference-tag-color);
+    }
+
+    .tag-name {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 0.5rem 0.5rem 0.5rem 0.9rem;
+      border-top-left-radius: 3rem;
+      border-bottom-left-radius: 3rem;
+    }
+
+    .tag-value {
+      background-color: rgba(0, 0, 0, 0.1);
+      padding: 0.5rem 0.9rem 0.5rem 0.5rem;
+      border-top-right-radius: 3rem;
+      border-bottom-right-radius: 3rem;
+    }
+  }
 }
 
 #new_tag_dialog:open {
@@ -135,86 +213,34 @@ button {
   padding: 1rem;
   border: 0;
   border-radius: 1em;
+
+  #new_tag_data_types {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .new_tag_data_type_entry {
+    flex-direction: row;
+  }
 }
 
 ::backdrop {
   backdrop-filter: blur(1px);
 }
 
-#note_tags_list,
-#note_tags {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
-.tag {
-  border-radius: 3rem;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  margin: 0.5rem;
-}
-
-.int {
-  background-color: var(--int-tag-color);
-  color: var(--dark-text);
-}
-
-.float {
-  background-color: var(--float-tag-color);
-}
-
-.string {
-  background-color: var(--string-tag-color);
-}
-
-.reference {
-  background-color: var(--reference-tag-color);
-}
-
-.tag-name {
-  background-color: rgba(255, 255, 255, 0.1);
-  padding: 0.5rem 0.5rem 0.5rem 0.9rem;
-  border-top-left-radius: 3rem;
-  border-bottom-left-radius: 3rem;
-}
-
-.tag-value {
-  background-color: rgba(0, 0, 0, 0.1);
-  padding: 0.5rem 0.9rem 0.5rem 0.5rem;
-  border-top-right-radius: 3rem;
-  border-bottom-right-radius: 3rem;
-}
-
-.note_link {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-
-  >button {
-    border: 0;
-    background: none;
-  }
-}
-
-.note_link:hover {
-  background-color: #343434;
-}
-
-.new_tag_data_type_entry {
-  flex-direction: row;
-}
-
-#new_tag_data_types {
-  display: flex;
-  flex-direction: column;
-}
-
 @media (prefers-color-scheme: light) {
   :root {
     color: var(--dark-text);
     background-color: #ffffff;
+    --hover-background: #c6c6c6;
+    --string-tag-color: #be3737;
+    --int-tag-color: #ffe53e;
+    --float-tag-color: #30b34a;
+    --reference-tag-color: #0269bd;
+  }
+
+  .string {
+    color: var(--light-text);
   }
 
   a:hover {
