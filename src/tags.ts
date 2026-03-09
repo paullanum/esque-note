@@ -1,3 +1,4 @@
+import { getCached, invalidateFromFunction } from "./cache";
 import { createComponent, getComponent, getDataTypes, listComponents, queryEntity, removeComponent, type Data } from "./ecsql";
 import { NOTE_SELECTED_EVENT } from "./editor";
 import { currentNote } from "./main";
@@ -49,6 +50,7 @@ function tagTypeToData(tagType: string): Data {
 }
 
 async function reloadTags() {
+    invalidateFromFunction((name) => name.startsWith("tags-"));
     let components = await listComponents();
     let tags_box = document.querySelector<HTMLDivElement>("#tags")!;
     for (let component of components) {
@@ -97,9 +99,8 @@ async function setupEditorTags(event: CustomEvent<{ noteId: number }>) {
     let { components: tags, unused_components: unusedNoteTags } = await getTagsForNote(noteId);
     let tagElts: ReturnType<typeof createTagVisual>[] = [];
     for (let tagName of Object.keys(tags)) {
-        let data = await queryEntity(tagName, noteId);
-        // TODO: Cache this
-        let types = await getDataTypes(tagName);
+        let data = await getCached(`tags-query-${tagName}-entity-${noteId}`, async () => await queryEntity(tagName, noteId));
+        let types = await getCached(`tags-types-${tagName}`, async () => await getDataTypes(tagName));
         if (data === null) {
             throw "ERROR: queryEntity returned null";
         }
@@ -142,17 +143,19 @@ async function addTagToNote() {
 }
 
 async function getTagsForNote(noteId: number) {
-    let components: Record<string, Record<string, Data>> = {};
-    let unused_components: Record<string, Record<string, Data>> = {};
-    for (let component of await listComponents()) {
-        let result = await queryEntity(component.name, noteId)
-        if (result === null) {
-            unused_components[component.name] = await getDataTypes(component.name);
-            continue;
+    return await getCached(`tags-note-${noteId}`, async () => {
+        let components: Record<string, Record<string, Data>> = {};
+        let unused_components: Record<string, Record<string, Data>> = {};
+        for (let component of await listComponents()) {
+            let result = await queryEntity(component.name, noteId)
+            if (result === null) {
+                unused_components[component.name] = await getDataTypes(component.name);
+                continue;
+            }
+            components[component.name] = await getDataTypes(component.name);
         }
-        components[component.name] = await getDataTypes(component.name);
-    }
-    return { components, unused_components };
+        return { components, unused_components };
+    });
 }
 
 const sqliteToCssClass: Record<string, string> = {
