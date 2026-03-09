@@ -1,6 +1,6 @@
 import { createComponent, getComponent, getDataTypes, listComponents, queryEntity, removeComponent, type Data } from "./ecsql";
 import { NOTE_SELECTED_EVENT } from "./editor";
-import { getCurrentNote } from "./main";
+import { currentNote } from "./main";
 
 let dialog = document.querySelector<HTMLDialogElement>("#new_tag_dialog")!;
 let dataTypeContainer = dialog.querySelector<HTMLDivElement>("#new_tag_data_types")!;
@@ -22,6 +22,7 @@ let lastUsedNote: number = -1;
 let lastUsedTagData: { component: string, column: string };
 
 function initTagDialog() {
+    // TODO: Only clear after a valid tag submission
     dataTypeContainer.textContent = "";
     function addDataType() {
         let node = document.importNode(dataTypeTemplate, true);
@@ -120,7 +121,7 @@ async function setupEditorTags(event: CustomEvent<{ noteId: number }>) {
             newNoteTag.open = false
             addTagName.textContent = `Value for ${tag}`
             addTagToNoteDialog.show();
-            lastUsedNote = getCurrentNote();
+            lastUsedNote = currentNote;
             let nonEntityKey = Object.keys(unusedNoteTags[tag]).filter(x => x !== "entity")[0];
             lastUsedTagData = { column: nonEntityKey, component: tag }
         };

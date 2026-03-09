@@ -1,5 +1,5 @@
 import { query } from "./ecsql";
-import { name, body, getCurrentNote } from "./main";
+import { name, body, currentNote } from "./main";
 import { NOTES_CHANGED_EVENT } from "./sidebar";
 
 export const NOTE_SELECTED_EVENT = "noteselected";
@@ -7,10 +7,9 @@ export const NOTE_SELECTED_EVENT = "noteselected";
 async function save() {
     let title_elt = document.querySelector<HTMLInputElement>("#note_title")!;
     let body_elt = document.querySelector<HTMLTextAreaElement>("#note_body")!;
-    let current_note = getCurrentNote();
 
-    await name.update(current_note, { name: title_elt.value });
-    await body.update(current_note, { body: body_elt.value });
+    await name.update(currentNote, { name: title_elt.value });
+    await body.update(currentNote, { body: body_elt.value });
     document.dispatchEvent(new CustomEvent(NOTES_CHANGED_EVENT));
 }
 

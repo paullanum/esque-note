@@ -12,21 +12,22 @@ export let body = await createComponent("__body", { "body": 'TEXT' });
 
 document.dispatchEvent(new CustomEvent(NOTES_CHANGED_EVENT));
 document.dispatchEvent(new CustomEvent(TAGS_CHANGED_EVENT));
-document.dispatchEvent(new CustomEvent(NOTE_SELECTED_EVENT, { detail: { noteId: getCurrentNote() } }));
 
+let noteParam = (new URL(window.location.href)).searchParams.get("note")
+export let currentNote: number;
 
-export function getCurrentNote() {
-  let url = new URL(window.location.href);
-  let params = url.searchParams;
-  // TODO: Handle case when this isn't set
-  try {
-    return parseInt(params.get("note")!);
-  }
-  catch {
-    return 0;
-  }
+if (noteParam === null) {
+  currentNote = 0
 }
+else {
+  currentNote = parseInt(noteParam);
+  // TODO: If this note doesn't exist, navigate to one that does
+}
+
+document.dispatchEvent(new CustomEvent(NOTE_SELECTED_EVENT, { detail: { noteId: currentNote } }));
+// Make sure to do this AFTER sending the first one
+document.addEventListener(NOTE_SELECTED_EVENT, (e) => (e as CustomEvent<{ noteId: number }>).detail.noteId);
 
 // TODO: This doesn't currently work with the forward button at all,
 // maybe should look into bfcache?
-window.addEventListener("popstate", () => document.dispatchEvent(new CustomEvent(NOTE_SELECTED_EVENT, { detail: { noteId: getCurrentNote() } })));
+window.addEventListener("popstate", () => document.dispatchEvent(new CustomEvent(NOTE_SELECTED_EVENT, { detail: { noteId: currentNote } })));
