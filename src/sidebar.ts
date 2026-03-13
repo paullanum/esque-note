@@ -1,6 +1,6 @@
 import { createEntity, deleteDatabaseFile, query, removeEntity, sql } from "./ecsql";
 import { NOTE_SELECTED_EVENT } from "./editor";
-import { name, body } from "./main";
+import { name, body, currentNote } from "./main";
 
 let selectedToDelete: number = -1;
 export const NOTES_CHANGED_EVENT = "noteschanged";
@@ -40,7 +40,7 @@ async function runDebugQuery() {
         return;
     }
     console.log(text_data)
-    console.log(await sql(text_data))
+    console.table(await sql(text_data))
 }
 
 function prepareDeletion(noteId: number) {
@@ -58,7 +58,12 @@ async function reloadNotes() {
         let elt = document.createElement('a');
         elt.tabIndex = 0;
         parent.appendChild(elt)
-        elt.onclick = () => document.dispatchEvent(new CustomEvent(NOTE_SELECTED_EVENT, { detail: { noteId: note.entity } }))
+        elt.onclick = () => {
+            if (note.entity === currentNote) {
+                return;
+            }
+            document.dispatchEvent(new CustomEvent(NOTE_SELECTED_EVENT, { detail: { noteId: note.entity } }));
+        };
         elt.innerHTML = note.name;
         elt.classList.add("note_link")
         let button = document.createElement('button')

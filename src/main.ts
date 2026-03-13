@@ -26,7 +26,7 @@ else {
 
 document.dispatchEvent(new CustomEvent(NOTE_SELECTED_EVENT, { detail: { noteId: currentNote } }));
 // Make sure to do this AFTER sending the first one
-document.addEventListener(NOTE_SELECTED_EVENT, (e) => (e as CustomEvent<{ noteId: number }>).detail.noteId);
+document.addEventListener(NOTE_SELECTED_EVENT, (e) => currentNote = (e as CustomEvent<{ noteId: number }>).detail.noteId);
 
 // TODO: This doesn't currently work with the forward button at all,
 // maybe should look into bfcache?

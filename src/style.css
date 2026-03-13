@@ -242,6 +242,17 @@ details {
       padding: 0.5rem 0.9rem 0.5rem 0.5rem;
       border-top-right-radius: 3rem;
       border-bottom-right-radius: 3rem;
+
+      >a {
+        color: var(--light-text);
+        text-decoration: underline;
+        font-weight: normal;
+
+        &:hover,
+        &:focus {
+          font-weight: bold;
+        }
+      }
     }
   }
 }

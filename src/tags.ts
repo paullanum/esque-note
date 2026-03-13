@@ -1,7 +1,7 @@
 import { getCached, invalidateFromFunction } from "./cache";
 import { createComponent, getComponent, getDataTypes, listComponents, queryEntity, removeComponent, type Data } from "./ecsql";
 import { NOTE_SELECTED_EVENT } from "./editor";
-import { currentNote } from "./main";
+import { currentNote, name } from "./main";
 
 let dialog = document.querySelector<HTMLDialogElement>("#new_tag_dialog")!;
 let dataTypeContainer = dialog.querySelector<HTMLDivElement>("#new_tag_data_types")!;
@@ -45,7 +45,7 @@ function tagTypeToData(tagType: string): Data {
         default:
             // Assume this is a reference for now
             console.error("ERROR: REFERENCES ARE NOT HANDLED HERE YET")
-            return "REFERENCE x(abc)"
+            return "REFERENCE"
     }
 }
 
@@ -111,7 +111,7 @@ async function setupEditorTags(event: CustomEvent<{ noteId: number }>) {
         let tag = createTagVisual(tagName, tagData);
         tagElts.push(tag);
     }
-    for (let elt of tagElts) {
+    for await (let elt of tagElts) {
         tagSpace.appendChild(elt);
     }
     unusedTags.textContent = "";
@@ -162,9 +162,10 @@ const sqliteToCssClass: Record<string, string> = {
     "INTEGER": "int",
     "REAL": "float",
     "TEXT": "string",
+    "REFERENCE": "reference",
 }
 
-function createTagVisual(name: string, data: Record<string, { type: Data, data: number | string }>) {
+async function createTagVisual(componentName: string, data: Record<string, { type: Data, data: number | string }>) {
     let { entity, ...filteredTypes } = data;
     if (Object.keys(filteredTypes).length > 1) {
         // TODO: Compound data types
@@ -174,8 +175,28 @@ function createTagVisual(name: string, data: Record<string, { type: Data, data: 
 
     let tagTemplate = document.querySelector<HTMLTemplateElement>("#tag_template")!;
     let elt = document.importNode(tagTemplate, true).content;
-    elt.querySelector<HTMLDivElement>("#tag_name")!.textContent = name;
-    elt.querySelector<HTMLDivElement>("#tag_value")!.textContent = filteredTypes[tempFirstKey].data as string;
+    elt.querySelector<HTMLDivElement>("#tag_name")!.textContent = componentName;
+    let tagInfo = filteredTypes[tempFirstKey];
+    if (tagInfo.type === "REFERENCE") {
+        // TODO: Invalidate this when names change
+        let nameTable = await getCached(
+            `note-name-${tagInfo.data}`,
+            async () => await queryEntity(name.component, tagInfo.data as number)
+        );
+        if (nameTable === null) {
+            throw new Error(`No name for referenced note with id ${tagInfo.data}`);
+        }
+        let content = nameTable["name"]
+        let link = document.createElement("a");
+        link.onclick = () => document.dispatchEvent(new CustomEvent(NOTE_SELECTED_EVENT, { detail: { noteId: tagInfo.data } }))
+        link.tabIndex = 0;
+        link.textContent = content;
+        elt.querySelector<HTMLDivElement>("#tag_value")!.appendChild(link);
+    }
+    else {
+        let content = filteredTypes[tempFirstKey].data as string;
+        elt.querySelector<HTMLDivElement>("#tag_value")!.textContent = content;
+    }
     elt.firstElementChild!!.classList.add(sqliteToCssClass[filteredTypes[tempFirstKey].type]);
     return elt
 }

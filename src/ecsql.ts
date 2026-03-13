@@ -1,35 +1,42 @@
-type Reference = `REFERENCE ${string}(${string})`
+type Reference = `REFERENCE`
 export type Data = "INTEGER" | "REAL" | "TEXT" | Reference;
 type TypeMap = {
     INTEGER: number,
     REAL: number,
     TEXT: string,
-    [key: Reference]: number
+    REFERENCE: number
 };
 
-const DEBUG_MODE = false;
+const DEBUG_MODE = true;
 export const DB_PATH = "database.sqlite3"
 
 async function init_ecsql() {
+    let existingTables: string[] = []
     const { SQLocal } = await import("sqlocal");
-    return new SQLocal({
+    let ret = new SQLocal({
         databasePath: DB_PATH,
         onInit: (sql) => { return [sql`PRAGMA foreign_keys = true`] },
     });
+    let tables = await ret.sql<{ name: string }>`SELECT name FROM sqlite_master WHERE type = 'table' AND name='__entities'`
+    for (let table of tables) {
+        existingTables.push(table["name"])
+    }
+    return { existingTables, ...ret }
 }
 
 // TODO: This is a weird pattern, there's a better way to handle this
-let { sql: _sql, deleteDatabaseFile: deleteDb } = await init_ecsql()
+let { sql: _sql, deleteDatabaseFile: deleteDb, existingTables } = await init_ecsql()
 export let deleteDatabaseFile = deleteDb;
-let sql = (input: string) => {
+
+export function sql<T extends Record<string, any>>(input: string) {
     if (DEBUG_MODE) {
         console.log(`attempting: ${input}`)
     }
-    return _sql(input);
+    return _sql<T>(input);
 }
 
-export let table_exists = (await _sql`SELECT name FROM sqlite_master WHERE type = 'table' AND name='__entities'`).length > 0
-if (!table_exists) {
+export let tableExists = (await _sql`SELECT name FROM sqlite_master WHERE type = 'table' AND name='__entities'`).length > 0
+if (!tableExists) {
     console.log("Creating table...")
     await _sql`CREATE TABLE IF NOT EXISTS __entities (id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT)`
 }
@@ -56,37 +63,39 @@ export type Component<T extends ComponentDataTypes> = {
     init: (entity: number, data: Partial<ComponentData<T>>) => Promise<DefaultSqLocalReturnType>
     update: (entity: number, data: Partial<ComponentData<T>>) => Promise<DefaultSqLocalReturnType>
     component: string,
-    dataTypes: T
 }
 
 export async function createComponent<T extends ComponentDataTypes>(componentName: string, dataTypes: T): Promise<Component<T>> {
     // TODO: Skip this part if already created
-    let data_input = ""
-    let foreign_keys = ""
-    let references: { [key: string]: string } = {}
+    if (existingTables.includes(componentName)) {
+        return { ...getComponent<T>(componentName) }
+    }
+    let dataInput = ""
+    let foreignKeys = ""
+    let references: string[] = []
     for (let name of Object.keys(dataTypes)) {
         let type = dataTypes[name]
         if (type.startsWith("REFERENCE")) {
-            references[name] = type.slice(9)
+            references.push(name)
             type = "INTEGER"
         }
-        data_input += `${name} ${dataTypes[name]}, `
+        dataInput += `${name} ${type}, `
     }
     if (Object.keys(references).length != 0) {
-        foreign_keys = ","
+        foreignKeys = ","
     }
-    for (let ref of Object.keys(references)) {
-        foreign_keys += `FOREIGN KEY(${ref} REFERENCES ${references[ref]}) ON DELETE CASCADE`
+    for (let ref of references) {
+        foreignKeys += `FOREIGN KEY(${ref}) REFERENCES __entities(id) ON DELETE CASCADE`
     }
     let input = `CREATE TABLE IF NOT EXISTS ${componentName} (
     entity INTEGER UNIQUE PRIMARY KEY,
-    ${data_input}
+    ${dataInput}
     FOREIGN KEY(entity) REFERENCES __entities(id) ON DELETE CASCADE
-    ${foreign_keys}
+    ${foreignKeys}
     )`
     await sql(input)
 
-    return { ...getComponent(componentName), dataTypes: dataTypes, };
+    return { ...getComponent(componentName) };
 }
 
 export function getComponent<T extends ComponentDataTypes = Record<string, Data>>(componentName: string) {
@@ -156,18 +165,33 @@ export async function queryEntity(component: string, entityId: number) {
     return result[0];
 }
 
-export async function getDataTypes(component: string) {
+export async function getDataTypes<T extends Record<string, Data>>(component: string): Promise<T> {
     let types: Record<string, Data> = {};
     let input = `pragma table_info(${component})`;
-    let table_info = await sql(input);
+    let [table_info, foreignKeys] = await Promise.all([await sql<{ name: string, type: Data }>(input), await getForeignKeys(component)]);
+    let fkSet = new Set(Object.keys(foreignKeys));
+    console.log(table_info)
     for (let column of table_info) {
-        types[column["name"]] = column["type"];
+        if (fkSet.has(column.name)) {
+            types[column.name] = `REFERENCE`;
+        } else {
+            types[column.name] = column.type;
+        }
     }
-    return types
+    return types as T
+}
+
+async function getForeignKeys(component: string) {
+    let keys = await sql<{ table: string, from: string, to: string }>(`pragma foreign_key_list(${component})`)
+    let ret: Record<string, { table: string, to: string }> = {}
+    for (let key of keys) {
+        ret[key.from] = { table: key.table, to: key.to }
+    }
+    return ret
 }
 
 export async function listComponents() {
-    let components: { name: string }[] = await _sql`SELECT name FROM sqlite_master WHERE type = 'table'`
+    let components = await _sql<{ name: string, [key: string]: any }>`SELECT name FROM sqlite_master WHERE type = 'table'`
     return components.filter(component => !component.name.startsWith("__") && component.name !== "sqlite_sequence");
 }
 
@@ -177,4 +201,14 @@ export async function removeComponent(componentName: string) {
 
 export async function removeEntity(entityId: number) {
     await _sql`DELETE FROM __entities WHERE id = ${entityId}`
+}
+
+declare global {
+    interface Window {
+        createComponent: typeof createComponent
+    }
+}
+
+if (DEBUG_MODE) {
+    window.createComponent = createComponent
 }
