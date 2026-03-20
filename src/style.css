@@ -16,12 +16,14 @@
   --hover-background: #343434;
 
   --dark-text: #213547;
-  --light-text: rgba(255, 255, 255, 0.87);
+  --light-text: rgb(242, 242, 242);
 
   --string-tag-color: #c00000;
   --int-tag-color: #ffdd00;
-  --float-tag-color: #098a5d;
+  --float-tag-color: #066b1f;
   --reference-tag-color: #0077d9;
+
+  --divider-color: #414449;
 }
 
 a {
@@ -43,7 +45,7 @@ body {
 }
 
 h1 {
-  font-size: 3.2em;
+  font-size: 2em;
   line-height: 1.1;
 }
 
@@ -51,7 +53,28 @@ button {
   padding: 0.5rem;
 }
 
-details {
+main>div {
+  resize: horizontal;
+  overflow: scroll;
+}
+
+@supports (interpolate-size: allow-keywords) {
+  :root {
+    interpolate-size: allow-keywords;
+  }
+
+  [open]::details-content {
+    height: auto;
+  }
+}
+
+::details-content {
+  transition: height 0.2s ease;
+  height: auto;
+  overflow: clip;
+}
+
+#new_note_tag {
   margin: 1rem;
 
   summary {
@@ -102,30 +125,66 @@ details {
 
   h1 {
     margin: 0;
-    font-family: 'Times New Roman', Times, serif;
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
   }
 
-  border-bottom: 0.5rem solid #f9f9f9;
+  border-bottom: 0.1rem solid var(--divider-color);
 }
 
 #content {
   display: flex;
   flex-direction: row;
-  height: auto;
   flex: 1;
   padding: 0;
   margin: 0;
 }
 
 #sidebar {
-  padding: 1rem;
-  border-right: 0.1rem solid #f9f9f9;
+  border-right: 0.1rem solid var(--divider-color);
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
 
   #debug_console {
     font-family: monospace;
-    align-self: flex-end;
+  }
+
+  details {
+    summary {
+      padding-left: 1rem;
+
+      h2 {
+        margin: 0;
+      }
+
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 0.1rem solid var(--divider-color);
+      list-style: none;
+
+      &:hover {
+        background: var(--hover-background);
+      }
+
+      &::after {
+        font-size: x-large;
+        content: "◂";
+      }
+
+      [open] &::after {
+        content: "▿";
+      }
+    }
+
+    >div:has(>button) {
+      margin: 1rem 1rem;
+    }
+
+    :not(summary, button) {
+      padding: 0rem 1rem;
+    }
   }
 
   #tags {
@@ -138,29 +197,32 @@ details {
     }
   }
 
+  /* 
   #notes {
     flex: 1;
     display: flex;
     flex-direction: column;
     width: 100%;
+    padding-top: 0;
+    margin: 0;
 
     :hover {
       background-color: var(--hover-background);
+    } */
+
+  .note_link {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+
+    >button {
+      border: 0;
+      background: none;
     }
-
-    .note_link {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-
-      >button {
-        border: 0;
-        background: none;
-      }
-
-    }
-
   }
+
+  /* 
+  } */
 }
 
 #editor {
@@ -173,7 +235,7 @@ details {
   input[type="text"],
   textarea {
     appearance: none;
-    border: none;
+    border: 0.1rem solid var(--hover-background);
     width: 100%;
     background: none;
   }

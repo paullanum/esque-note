@@ -14,24 +14,39 @@
   </header>
   <main id="content">
     <div id="sidebar">
-      <h2>Notes</h2>
       <div>
-        <button id="new_note_button">New Note</button>
-        <button id="refresh">🔄️</button>
+        <details open>
+          <summary>
+            <h2>Notes</h2>
+          </summary>
+          <div id="notes_sidebar_buttons">
+            <button id="new_note_button">New Note</button>
+            <button id="refresh">🔄️</button>
+          </div>
+          <div id="notes"></div>
+        </details>
+        <details>
+          <summary>
+            <h2>Views</h2>
+          </summary>
+        </details>
+        <details>
+          <summary>
+            <h2>Tags</h2>
+          </summary>
+          <div>
+            <button id="new_tag_button" commandfor="new_tag_dialog" command="show-modal">New Tag</button>
+          </div>
+          <div id="tags"></div>
+        </details>
       </div>
-      <div id="notes"></div>
-      <div>
-        <h2>Tags</h2>
-        <button id="new_tag_button" commandfor="new_tag_dialog" command="show-modal">New Tag</button>
-        <div id="tags"></div>
-      </div>
-      <div>
-        <h2>Views</h2>
-      </div>
-      <div id="debug_console">
-        <textarea id="sql_debug" aria-label="SQL Debug Panel"></textarea>
-        <button id="run_debug">Run</button>
-      </div>
+      <details>
+        <summary>Debug</summary>
+        <div id="debug_console">
+          <textarea id="sql_debug" aria-label="SQL Debug Panel"></textarea>
+          <button id="run_debug">Run</button>
+        </div>
+      </details>
     </div>
     <div id="editor">
       <input type="text" id="note_title" aria-label="Title">
@@ -79,6 +94,7 @@
           <option>String</option>
           <option>Int</option>
           <option>Float</option>
+          <option>Reference</option>
         </select>
       </label>
     </form>
