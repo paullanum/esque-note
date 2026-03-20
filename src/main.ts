@@ -6,6 +6,7 @@ import { createComponent } from './ecsql'
 import { NOTES_CHANGED_EVENT } from './sidebar';
 import { NOTE_SELECTED_EVENT } from './editor';
 import { TAGS_CHANGED_EVENT } from './tags';
+import * as _ from './sidebar_item';
 
 export let name = await createComponent("__name", { "name": 'TEXT' });
 export let body = await createComponent("__body", { "body": 'TEXT' });

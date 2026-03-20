@@ -15,30 +15,24 @@
   <main id="content">
     <div id="sidebar">
       <div>
-        <details open>
-          <summary>
-            <h2>Notes</h2>
-          </summary>
-          <div id="notes_sidebar_buttons">
+        <navbar-item>
+          <h2 slot="title-text">Notes</h2>
+          <div slot="top-bar" id="notes_sidebar_buttons">
             <button id="new_note_button">New Note</button>
             <button id="refresh">🔄️</button>
           </div>
-          <div id="notes"></div>
-        </details>
-        <details>
-          <summary>
-            <h2>Views</h2>
-          </summary>
-        </details>
-        <details>
-          <summary>
-            <h2>Tags</h2>
-          </summary>
+          <div id="notes" slot="items" class="items"></div>
+        </navbar-item>
+        <navbar-item>
+          <h2 slot="title-text">Views</h2>
+        </navbar-item>
+        <navbar-item>
+          <h2 slot="title-text">Tags</h2>
           <div>
             <button id="new_tag_button" commandfor="new_tag_dialog" command="show-modal">New Tag</button>
           </div>
-          <div id="tags"></div>
-        </details>
+          <div slot="items" id="tags" class="items"></div>
+        </navbar-item>
       </div>
       <details>
         <summary>Debug</summary>
@@ -105,6 +99,33 @@
       </div>
       <div id="tag_value" class="tag-value">
       </div>
+    </div>
+  </template>
+  <template id="sidebar-item-template">
+    <style>
+      @import "src/sidebar_item.css";
+    </style>
+    <details open>
+      <summary>
+        <slot name="title-text">
+          <h2>TITLE</h2>
+        </slot>
+      </summary>
+      <slot name="top-bar">
+      </slot>
+      <slot name="items">
+      </slot>
+    </details>
+  </template>
+  <template id="note-item-template">
+    <style>
+      @import './src/note_item.css';
+    </style>
+    <div>
+      <a tabindex="0">
+        <slot name="name" id="name_text">NAME</slot>
+      </a>
+      <button commandfor="confirm_deletion" command="show-modal">🗑️</button>
     </div>
   </template>
   <script type="module" src="/src/main.ts"></script>

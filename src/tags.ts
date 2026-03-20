@@ -2,6 +2,7 @@ import { getCached, invalidateFromFunction } from "./cache";
 import { createComponent, getComponent, getDataTypes, listComponents, queryEntity, removeComponent, type Data } from "./ecsql";
 import { NOTE_SELECTED_EVENT } from "./editor";
 import { currentNote, name } from "./main";
+import { TagItem } from "./tag_item";
 
 let dialog = document.querySelector<HTMLDialogElement>("#new_tag_dialog")!;
 let dataTypeContainer = dialog.querySelector<HTMLDivElement>("#new_tag_data_types")!;
@@ -54,8 +55,10 @@ async function reloadTags() {
     let components = await listComponents();
     let tags_box = document.querySelector<HTMLDivElement>("#tags")!;
     for (let component of components) {
-        let elt = document.createElement('a');
-        elt.textContent = component.name
+        let elt = new TagItem();
+        let node = elt.appendChild(document.createElement("p"))
+        node.slot = "name"
+        node.textContent = component.name;
         tags_box.appendChild(elt);
     }
 }

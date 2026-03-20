@@ -1,0 +1,37 @@
+a {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    font-weight: 500;
+    color: #848afe;
+    text-decoration: inherit;
+}
+
+::slotted(p) {
+    margin: 0rem 1rem;
+}
+
+:hover {
+    color: #535bf2;
+    background-color: var(--hover-background);
+}
+
+button {
+    border: 0;
+    background: none;
+
+    &:hover {
+        background: var(--delete-color);
+    }
+}
+
+div {
+    display: flex;
+}
+
+::shadow {
+    width: max-content;
+    display: flex;
+    justify-content: space-between;
+    margin: 1rem;
+}

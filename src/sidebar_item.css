@@ -1,0 +1,49 @@
+details {
+
+    summary {
+        padding: 1rem 0rem 0rem 0rem;
+        /* padding-left: 1rem; */
+
+
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 0.1rem solid var(--divider-color);
+        list-style: none;
+
+        &:hover {
+            background: var(--hover-background);
+        }
+
+        &::after {
+            font-size: x-large;
+            content: "◂";
+        }
+
+        [open] &::after {
+            content: "▿";
+        }
+    }
+
+    >div:has(>button) {
+        margin: 1rem 1rem;
+    }
+}
+
+
+::slotted(h2) {
+    margin: 0;
+}
+
+::slotted(.items) {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0rem 0rem;
+    margin: 0;
+
+    :hover {
+        background-color: var(--hover-background);
+    }
+}

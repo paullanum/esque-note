@@ -1,6 +1,6 @@
 import { createEntity, deleteDatabaseFile, query, removeEntity, sql } from "./ecsql";
-import { NOTE_SELECTED_EVENT } from "./editor";
-import { name, body, currentNote } from "./main";
+import { name, body } from "./main";
+import { NoteItem } from "./note_item";
 
 let selectedToDelete: number = -1;
 export const NOTES_CHANGED_EVENT = "noteschanged";
@@ -43,9 +43,10 @@ async function runDebugQuery() {
     console.table(await sql(text_data))
 }
 
-function prepareDeletion(noteId: number) {
+export function prepareDeletion(noteId: number) {
     console.log("Preparing to delete id: ", noteId);
     selectedToDelete = noteId;
+    modal.showModal();
 }
 
 document.addEventListener(NOTES_CHANGED_EVENT, reloadNotes)
@@ -55,24 +56,11 @@ async function reloadNotes() {
     let parent = document.querySelector<HTMLDivElement>("#notes")!;
     parent.innerText = "";
     for (let note of answer) {
-        let elt = document.createElement('a');
-        elt.tabIndex = 0;
-        parent.appendChild(elt)
-        elt.onclick = () => {
-            if (note.entity === currentNote) {
-                return;
-            }
-            document.dispatchEvent(new CustomEvent(NOTE_SELECTED_EVENT, { detail: { noteId: note.entity } }));
-        };
-        elt.innerHTML = note.name;
-        elt.classList.add("note_link")
-        let button = document.createElement('button')
-        button.classList.add("delete_note_button")
-        button.onclick = () => prepareDeletion(note.entity);
-        button.commandForElement = modal;
-        button.command = "show-modal"
-        button.innerText = "🗑️";
-        elt.appendChild(button);
+        let noteItem = new NoteItem(note.entity);
+        let name = noteItem.appendChild(document.createElement('p'));
+        name.textContent = note.name;
+        name.slot = "name"
+        parent.appendChild(noteItem);
     }
 }
 
