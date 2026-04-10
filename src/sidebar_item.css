@@ -1,8 +1,6 @@
 details {
 
     summary {
-        padding: 1rem 0rem 0rem 0rem;
-        /* padding-left: 1rem; */
 
 
         display: flex;
@@ -33,6 +31,7 @@ details {
 
 
 ::slotted(h2) {
+    padding: 1rem 0rem 0rem 0rem;
     margin: 0;
 }
 

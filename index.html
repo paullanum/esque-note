@@ -12,123 +12,121 @@
   <header id="navbar">
     <h1>Esque Note</h1>
   </header>
-  <main id="content">
-    <div id="sidebar">
-      <div>
-        <navbar-item>
-          <h2 slot="title-text">Notes</h2>
-          <div slot="top-bar" id="notes_sidebar_buttons">
-            <button id="new_note_button">New Note</button>
-            <button id="refresh">🔄️</button>
-          </div>
-          <div id="notes" slot="items" class="items"></div>
-        </navbar-item>
-        <navbar-item>
-          <h2 slot="title-text">Views</h2>
-        </navbar-item>
-        <navbar-item>
-          <h2 slot="title-text">Tags</h2>
-          <div>
-            <button id="new_tag_button" commandfor="new_tag_dialog" command="show-modal">New Tag</button>
-          </div>
-          <div slot="items" id="tags" class="items"></div>
-        </navbar-item>
-      </div>
-      <details>
-        <summary>Debug</summary>
-        <div id="debug_console">
-          <textarea id="sql_debug" aria-label="SQL Debug Panel"></textarea>
-          <button id="run_debug">Run</button>
-        </div>
-      </details>
-    </div>
-    <div id="editor">
-      <input type="text" id="note_title" aria-label="Title">
-      <div id="note_tags_list">
-        Tags:
-        <div id="note_tags"></div>
-        <details id="new_note_tag">
-          <summary>Add...</summary>
-          <ul id="unused_tags"></ul>
-        </details>
-        <dialog id="add_tag_value_dialog">
-          <div id="add_tag_name">Value for NAME</div>
-          <input type="text" id="add_tag_value">
-          <button id="submit_tag_value" commandfor="add_tag_value_dialog" command="close">OK</button>
-        </dialog>
-      </div>
-      <textarea id="note_body" aria-label="Note Body"></textarea>
-      <button id="save_button">Save</button>
-    </div>
-  </main>
-  <dialog id="new_tag_dialog">
-    <h1>New Tag</h1>
-    <label>
-      Tag Name:
-      <input type="text" id="new_tag_name">
-    </label>
-    <h2>Data Types</h2>
-    <div id="new_tag_data_types"></div>
-    <button id="add_tag_data_type" disabled>+ (not yet implemented)</button>
-    <button id="new_tag_accept">OK</button>
-  </dialog>
-  <dialog id="confirm_deletion">
-    <h1>Are you sure you want to delete this note?</h1>
-    <button id="confirm_deletion_button" commandfor="confirm_deletion" command="close">Delete</button>
-  </dialog>
-  <template id="new_tag_data_type_selection">
-    <form class="new_tag_data_type_entry">
-      <label>
-        Name
-        <input type="text" class="new_tag_type_name">
-      </label>
-      <label>
-        Type
-        <select class="new_tag_type_data">
-          <option>String</option>
-          <option>Int</option>
-          <option>Float</option>
-          <option>Reference</option>
-        </select>
-      </label>
-    </form>
-  </template>
-  <template id="tag_template">
-    <div class="tag">
-      <div id="tag_name" class="tag-name">
-      </div>
-      <div id="tag_value" class="tag-value">
-      </div>
-    </div>
-  </template>
-  <template id="sidebar-item-template">
-    <style>
-      @import "src/sidebar_item.css";
-    </style>
-    <details open>
-      <summary>
-        <slot name="title-text">
-          <h2>TITLE</h2>
-        </slot>
-      </summary>
-      <slot name="top-bar">
-      </slot>
-      <slot name="items">
-      </slot>
-    </details>
-  </template>
-  <template id="note-item-template">
-    <style>
-      @import './src/note_item.css';
-    </style>
+  <div id="sidebar">
     <div>
-      <a tabindex="0">
-        <slot name="name" id="name_text">NAME</slot>
-      </a>
-      <button commandfor="confirm_deletion" command="show-modal">🗑️</button>
+      <navbar-item>
+        <h2 slot="title-text">Notes</h2>
+        <div slot="top-bar" id="notes_sidebar_buttons">
+          <button id="new_note_button">New Note</button>
+          <button id="refresh">🔄️</button>
+        </div>
+        <div id="notes" slot="items" class="items"></div>
+      </navbar-item>
+      <navbar-item>
+        <h2 slot="title-text">Views</h2>
+      </navbar-item>
+      <navbar-item>
+        <h2 slot="title-text">Attributes</h2>
+        <div>
+          <button id="new_tag_button" commandfor="new_tag_dialog" command="show-modal">New Tag</button>
+        </div>
+        <div slot="items" id="tags" class="items"></div>
+      </navbar-item>
     </div>
-  </template>
-  <script type="module" src="/src/main.ts"></script>
+    <details>
+      <summary>Debug</summary>
+      <div id="debug_console">
+        <textarea id="sql_debug" aria-label="SQL Debug Panel"></textarea>
+        <button id="run_debug">Run</button>
+      </div>
+    </details>
+  </div>
+  <div id="editor">
+    <input type="text" id="note_title" aria-label="Title">
+    <div id="note_tags_list">
+      Attributes:
+      <div id="note_tags"></div>
+      <details id="new_note_tag">
+        <summary>Add...</summary>
+        <ul id="unused_tags"></ul>
+      </details>
+      <dialog id="add_tag_value_dialog">
+        <div id="add_tag_name">Value for NAME</div>
+        <input type="text" id="add_tag_value">
+        <button id="submit_tag_value" commandfor="add_tag_value_dialog" command="close">OK</button>
+      </dialog>
+    </div>
+    <textarea id="note_body" aria-label="Note Body"></textarea>
+    <button id="save_button">Save</button>
+    </main>
+    <dialog id="new_tag_dialog">
+      <h1>New Tag</h1>
+      <label>
+        Tag Name:
+        <input type="text" id="new_tag_name">
+      </label>
+      <h2>Data Types</h2>
+      <div id="new_tag_data_types"></div>
+      <button id="add_tag_data_type" disabled>+ (not yet implemented)</button>
+      <button id="new_tag_accept">OK</button>
+    </dialog>
+    <dialog id="confirm_deletion">
+      <h1>Are you sure you want to delete this note?</h1>
+      <button id="confirm_deletion_button" commandfor="confirm_deletion" command="close">Delete</button>
+    </dialog>
+    <template id="new_tag_data_type_selection">
+      <form class="new_tag_data_type_entry">
+        <label>
+          Name
+          <input type="text" class="new_tag_type_name">
+        </label>
+        <label>
+          Type
+          <select class="new_tag_type_data">
+            <option>String</option>
+            <option>Int</option>
+            <option>Float</option>
+            <option>Reference</option>
+          </select>
+        </label>
+      </form>
+    </template>
+    <template id="tag_template">
+      <div class="tag">
+        <div id="tag_name" class="tag-name">
+        </div>
+        <div id="tag_value" class="tag-value">
+        </div>
+      </div>
+    </template>
+    <template id="sidebar-item-template">
+      <style>
+        @import "src/sidebar_item.css";
+      </style>
+      <details open>
+        <summary>
+          <slot name="title-text">
+            <h2>TITLE</h2>
+          </slot>
+        </summary>
+        <slot name="top-bar">
+        </slot>
+        <slot name="items">
+        </slot>
+      </details>
+    </template>
+    <template id="note-item-template">
+      <style>
+        @import './src/note_item.css';
+      </style>
+      <div>
+        <a tabindex="0">
+          <slot name="name" id="name_text">NAME</slot>
+        </a>
+        <button commandfor="confirm_deletion" command="show-modal">🗑️</button>
+      </div>
+    </template>
+    <script type="module" src="/src/main.ts"></script>
 </body>
 
 </html>

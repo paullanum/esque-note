@@ -39,8 +39,12 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 5fr;
+  grid-template-rows: fit-content(50px) 1fr;
+  grid-template-areas:
+    "head ."
+    "nav body";
   width: 100dvw;
   height: 100dvh;
 }
@@ -123,6 +127,7 @@ main>div {
   display: flex;
   width: fill;
   align-items: start;
+  grid-area: head;
 
   h1 {
     margin: 0;
@@ -132,28 +137,21 @@ main>div {
   border-bottom: 0.1rem solid var(--divider-color);
 }
 
-#content {
-  display: flex;
-  flex-direction: row;
-  flex: 1;
-  padding: 0;
-  margin: 0;
-}
-
 
 #sidebar {
   border-right: 0.1rem solid var(--divider-color);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  grid-area: nav;
 }
 
 #editor {
   margin: 0;
   padding: 1rem;
-  width: 100%;
   display: flex;
   flex-direction: column;
+  grid-area: body;
 
   input[type="text"],
   textarea {

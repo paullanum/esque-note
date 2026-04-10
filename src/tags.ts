@@ -1,5 +1,5 @@
 import { getCached, invalidateFromFunction } from "./cache";
-import { createComponent, getComponent, getDataTypes, listComponents, queryEntity, removeComponent, type Data } from "./ecsql";
+import { createComponent, getComponent, getDataTypes, listComponents, queryEntity, type Data } from "./ecsql";
 import { NOTE_SELECTED_EVENT } from "./editor";
 import { currentNote, name } from "./main";
 import { TagItem } from "./tag_item";
@@ -205,10 +205,10 @@ async function createTagVisual(componentName: string, data: Record<string, { typ
 }
 
 // TODO: This
-async function deleteTag(tagName: string) {
-    await removeComponent(tagName);
-    document.dispatchEvent(new CustomEvent(TAGS_CHANGED_EVENT));
-}
+// async function deleteTag(tagName: string) {
+//     await removeComponent(tagName);
+//     document.dispatchEvent(new CustomEvent(TAGS_CHANGED_EVENT));
+// }
 
 document.addEventListener(NOTE_SELECTED_EVENT, async (e) => await setupEditorTags(e as CustomEvent<{ noteId: number }>));
 document.addEventListener(TAGS_CHANGED_EVENT, reloadTags);
